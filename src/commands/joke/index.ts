@@ -15,12 +15,20 @@ export const command: CommandInterface = {
         choices: [
             { name: "Español", value: "es" },
             { name: "Inglés", value: "en" },
+            { name: "Portugués", value: "pt" },
+            { name: "Francés", value: "fr" },
+            { name: "Japonés", value: "ja" },
         ],
     }],
     run: async (client, interaction) => {
         try {
             const idioma = interaction.options.getString('idioma'); 
-            const prompt = `Actua como una mascota virtual, un lobo llamado Wolfy. Cuentame un chiste en ${idioma === "es" ? "español" : "inglés"} de forma amigable y tierna.`;
+            const languageName = idioma === "es" ? "español" :
+                                 idioma === "en" ? "inglés" :
+                                 idioma === "pt" ? "portugués" :
+                                 idioma === "fr" ? "francés" : "japonés";
+            
+            const prompt = `Actúa como una mascota virtual, un lobo llamado Wolfy. Cuéntame un chiste en ${languageName}, asegurándote de que toda la respuesta esté en ese idioma.`;
 
             const response = await ollama.generate({
                 model: 'llama3', 
@@ -42,9 +50,9 @@ export const command: CommandInterface = {
         } catch (error) {
             console.error(error);
             if (interaction.replied) {
-                await interaction.editReply({ content: "Ocurrio un error al ejecutar el comando." });
+                await interaction.editReply({ content: "Ocurrió un error al ejecutar el comando." });
             } else {
-                await interaction.reply({ content: "Ocurrio un error al ejecutar el comando.", ephemeral: true });
+                await interaction.reply({ content: "Ocurrió un error al ejecutar el comando.", ephemeral: true });
             }
         }
     }

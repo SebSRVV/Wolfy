@@ -1,75 +1,39 @@
-// import { Client, VoiceChannel } from 'discord.js';
-// import {
-// 	joinVoiceChannel,
-// 	createAudioPlayer,
-// 	createAudioResource,
-// 	entersState,
-// 	StreamType,
-// 	AudioPlayerStatus,
-// 	VoiceConnectionStatus,
-// } from '@discordjs/voice';
+import { ApplicationCommandType } from "discord.js";
+import { CommandInterface } from "@/src/types/Command";
+import { joinVoiceChannel } from '@discordjs/voice'; 
 
-// const player = createAudioPlayer();
+export const command: CommandInterface = {
+    name: "join",
+    description: "Une el bot al canal de voz en el que estás.",
+    type: ApplicationCommandType.ChatInput,
+    async run(client, interaction) {
+        try {
+            if (!interaction.guild) {
+                return interaction.reply({ content: "Este comando solo se puede usar en un servidor.", ephemeral: true });
+            }
 
-// function playSong() {
-// 	const resource = createAudioResource('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', {
-// 		inputType: StreamType.Arbitrary,
-// 	});
+            const member = interaction.member;
 
-// 	player.play(resource);
+            if (!member || !('voice' in member)) {
+                return interaction.reply({ content: "¡Debes estar en un canal de voz para que el bot se una!", ephemeral: true });
+            }
 
-// 	return entersState(player, AudioPlayerStatus.Playing, 5e3);
-// }
+            const voiceChannel = member.voice.channel;
 
-// async function connectToChannel(channel: VoiceChannel) {
-// 	const connection = joinVoiceChannel({
-// 		channelId: channel.id,
-// 		guildId: channel.guild.id,
-//         adapterCreator
-// 	});
+            if (!voiceChannel) {
+                return interaction.reply({ content: "¡Debes estar en un canal de voz para que el bot se una!", ephemeral: true });
+            }
 
-// 	try {
-// 		await entersState(connection, VoiceConnectionStatus.Ready, 30e3);
-// 		return connection;
-// 	} catch (error) {
-// 		connection.destroy();
-// 		throw error;
-// 	}
-// }
+            const connection = joinVoiceChannel({
+                channelId: voiceChannel.id,
+                guildId: interaction.guild.id,
+                adapterCreator: interaction.guild.voiceAdapterCreator,
+            });
 
-// const client = new Client({
-// 	ws: { intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES] },
-// });
-
-// client.login('token here');
-
-// client.on('ready', async () => {
-// 	console.log('Discord.js client is ready!');
-
-// 	try {
-// 		await playSong();
-// 		console.log('Song is ready to play!');
-// 	} catch (error) {
-// 		console.error(error);
-// 	}
-// });
-
-// client.on('message', async (message) => {
-// 	if (!message.guild) return;
-
-// 	if (message.content === '-join') {
-// 		const channel = message.member?.voice.channel;
-
-// 		if (channel) {
-// 			try {
-// 				const connection = await connectToChannel(channel);
-// 				connection.subscribe(player);
-// 				message.reply('Playing now!');
-// 			} catch (error) {
-// 				console.error(error);
-// 			}
-// 		} else {
-// 			message.reply('Join a voice channel then try again!');
-// 		}
-// 	}
-// });
+            await interaction.reply({ content: `¡Me he unido a ${voiceChannel.name}!`, ephemeral: true });
+        } catch (error) {
+            console.error(error);
+            await interaction.reply({ content: "Ocurrió un error al intentar unirme al canal de voz.", ephemeral: true });
+        }
+    }
+};

@@ -4,9 +4,13 @@
     "colors": "^1.4.0",
     "discord.js": "14.16.2",
     "dotenv": "16.4.5",
+    "erela.js": "^2.4.0",
     "fancy-log": "^2.0.0",
+    "kazagumo": "^3.2.1",
+    "lavalink": "^2.13.0",
     "mongoose": "8.6.3",
     "ollama": "^0.5.9",
+    "shoukaku": "^4.1.1",
     "zod": "3.23.8"
   },
   "devDependencies": {
