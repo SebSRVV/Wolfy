@@ -14,9 +14,11 @@ export interface IMember {
 	};
 	money: {
 		economy: {
-			amount: number; // stars
+			amount: number; 
+			reason: string;
+			date: Date;// stars
 		}[];
-		Food: {
+		food: {
 			amount: number; // Cinammons
 			reason: string;
 			date: Date;

@@ -1,50 +1,80 @@
-import { ApplicationCommandOptionType, ApplicationCommandType, Colors, EmbedBuilder } from "discord.js";
+// en desarollo
 import { CommandInterface } from "@/src/types/Command";
-import ollama from 'ollama';
-import { cyan } from "colors";
-import { set } from "mongoose";
-import { Emojis } from "@/src/enums";
+import { ChatInputCommandInteraction } from "discord.js";
+import talkTranslate, { getLanguageOptions } from "./talkTranslate";
 
-export const command: CommandInterface = {
+const command: CommandInterface = {
+    type: 1,
     name: "talk",
-    description: "Comando para conversar con el bot",
-    type: ApplicationCommandType.ChatInput,
-    options: [{
-        name: "texto",
-        description: "Mensaje",
-        type: ApplicationCommandOptionType.String,
-        required: true, 
-    }],
-    run: async (client, interaction) => {
+    description: "Interactúa con Wolfy",
+    options: [
+        {
+            type: 3, // Tipo string
+            name: "subcommand",
+            description: "Elige un subcomando (translate, math, quote, define, natural, joke)",
+            required: true,
+            choices: [
+                { name: "Translate", value: "translate" },
+                { name: "Math", value: "math" },
+                { name: "Quote", value: "quote" },
+                { name: "Define", value: "define" },
+                { name: "Natural", value: "natural" },
+                { name: "Joke", value: "joke" }
+            ]
+        },
+        {
+            type: 3,
+            name: "input",
+            description: "Tu entrada para Wolfy",
+            required: true
+        },
+        {
+            type: 3, 
+            name: "language",
+            description: "Idioma de destino para la traducción",
+            required: false,
+            choices: getLanguageOptions() 
+        }
+    ],
+    run: async (client, interaction: ChatInputCommandInteraction) => {
+        const subcommand = interaction.options.getString("subcommand");
+        const userInput = interaction.options.getString("input");
+        const language = interaction.options.getString("language") as "es" | "en"; 
+        
+        if (!userInput) {
+            await interaction.reply("Por favor proporciona una entrada.");
+            return;
+        }
+
         try {
-            const userMessage = interaction.options.getString('texto'); 
-
-
-            const response = await ollama.generate({
-                model: 'llama3', 
-                prompt: `Actua y responde como una mascota virtual eres un lobo llamada Wolfy. Responde en español y en un maximo de 1500 caracteres. Responde de manera amigable y tierna en el mismo idioma de el siguiente mensaje: ."${userMessage}"`,
-            });
-
-            console.log("Respuesta del modelo:");
-            console.log(response);
-            const responseText = response?.response || "Wolfy no pudo generar una respuesta.";
-
-            const embed = new EmbedBuilder()
-                .setColor(Colors.Blue)
-                .setDescription(responseText); 
-
-            await interaction.reply({
-                content: `${Emojis.SPARKLE} **Respuesta de Wolfy:** `,
-                embeds: [embed], 
-                ephemeral: false 
-            });
-        } catch (error) {
-            console.error(error);
-            if (interaction.replied) {
-                interaction.editReply({ content: "Ocurrió un error al ejecutar el comando." });
-            } else {
-                interaction.reply({ content: "Ocurrió un error al ejecutar el comando.", ephemeral: true });
+            switch (subcommand) {
+                case "translate":
+                    await talkTranslate(client, interaction, userInput, language);
+                    break;
+                case "math":
+                    await import("./talkMath").then(module => module.default(client, interaction, userInput));
+                    break;
+                case "quote":
+                    await import("./talkQuote").then(module => module.default(client, interaction));
+                    break;
+                case "define":
+                    await import("./talkDefine").then(module => module.default(client, interaction, userInput));
+                    break;
+                case "natural":
+                    await import("./talkNatural").then(module => module.default(client, interaction, userInput));
+                    break;
+                case "joke":
+                    await import("./talkJoke").then(module => module.default(client, interaction));
+                    break;
+                default:
+                    await interaction.reply("Comando no reconocido.");
+                    break;
             }
+        } catch (error) {
+            console.error("Error en el comando 'talk':", error);
+            await interaction.reply("Hubo un error al procesar tu solicitud. Por favor, intenta de nuevo más tarde.");
         }
     }
 };
+
+export { command };

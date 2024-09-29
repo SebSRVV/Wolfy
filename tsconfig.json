@@ -1,30 +1,30 @@
 {
-	"compilerOptions": {
-		"target": "ES2020",
-		"module": "commonjs",
-		"baseUrl": ".",
-		"outDir": "dist",
-		"moduleResolution": "node",
-		"removeComments": true,
-		"resolveJsonModule": true,
-		"esModuleInterop": true,
-		"forceConsistentCasingInFileNames": true,
-		"strict": true,
-		"strictNullChecks": true,
-		"skipLibCheck": true,
-		"paths": {
-			"@/*": ["./*"],
-			"@lib/*": ["./src/lib/*"],
-			"@enums/*": ["./src/enums/*"],
-			"@schemas/*": ["./src/database/schemas/*"],
-			"@types/*": ["./src/types/*"],
-			"@console": ["./src/lib/console"],
-			"@database": ["./src/database"],
-			"@utils/*": ["./src/utils/*"],
-			"@routes/*": ["./src/api/routes/*"],
-			"@middlewares/*": ["./src/api/middlewares/*"],
-		}
-	},
-	"include": ["src/**/*.ts", "tests/**/*.ts", "src/index.js"],
-	"exclude": ["node_modules", ".vscode"]
+    "compilerOptions": {
+        "target": "ES2020",
+        "module": "commonjs",
+        "baseUrl": ".",
+        "outDir": "dist",
+        "moduleResolution": "node",
+        "removeComments": true,
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "strict": true,
+        "strictNullChecks": true,
+        "skipLibCheck": true,
+        "paths": {
+            "@/*": ["./*"],
+            "@lib/*": ["./src/lib/*"],
+            "@enums/*": ["./src/enums/*"],
+            "@schemas/*": ["./src/database/schemas/*"],
+            "@types/*": ["./src/types/*"],
+            "@console": ["./src/lib/console"],
+            "@database": ["./src/database"],
+            "@utils/*": ["./src/utils/*"],
+            "@routes/*": ["./src/api/routes/*"],
+            "@middlewares/*": ["./src/api/middlewares/*"]
+        }
+    },
+    "include": ["src/**/*.ts", "tests/**/*.ts", "src/index.js"],
+    "exclude": ["node_modules", ".vscode"]
 }

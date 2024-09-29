@@ -2,28 +2,28 @@ import "@console";
 import "./env";
 import "@database";
 
-import { GatewayIntentBits, GuildWidgetStyle } from "discord.js";
+import { GatewayIntentBits } from "discord.js";
 import { Client } from "./lib/classes";
-
 import Handler from "./lib/handler";
-import { Manager } from "erela.js";
 
 const client = new Client({
-	intents: [
-		GatewayIntentBits.Guilds,
-		GatewayIntentBits.GuildMembers,
-		GatewayIntentBits.GuildMessages,
-		GatewayIntentBits.MessageContent,
-		GatewayIntentBits.DirectMessages,
-		GatewayIntentBits.GuildVoiceStates
-	]
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.DirectMessages,
+        GatewayIntentBits.GuildVoiceStates
+    ]
 });
 
 const handler = new Handler(client);
-handler.init();
-handler.publishCommands();
 
-client.login(process.env.DiscordTokenKey);
+// Cambia esta línea para esperar la inicialización
+(async () => {
+    await handler.init();
+    await handler.publishCommands(); // Espera a que se publiquen los comandos
+    client.login(process.env.DiscordTokenKey);
+})();
 
 export { client };
-

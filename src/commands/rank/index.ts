@@ -106,7 +106,7 @@ export const command: CommandInterface = {
             if (!embed) return interaction.reply({ content: "No se pudo cambiar el rango.", ephemeral: true });
 
             const notifyChannel = await client.channels
-                .fetch("1287980502686367796")
+                .fetch("1288840139698737184")
                 .then(c => c)
                 .catch(() => null);
             if (!notifyChannel) return interaction.reply({ content: "No se pudo cambiar el rango.", ephemeral: true });

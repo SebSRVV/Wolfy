@@ -15,14 +15,14 @@ export enum PetStatus {
 	Playful = "playful",
 	Lost = "lost",
 	Death = "death",
-	Alive = "alive"	
+	Alive = "alive"
 }
 
 export enum PetOwners {
 	Seb = "268439328307281920"
 }
 
-export enum PetAccesories{
+export enum PetAccesories {
 	Lentes = "lentes",
 	Capa = "capa",
 	Sombrero = "sombrero",
@@ -67,7 +67,7 @@ export interface IPet {
 	mascot: {
 		puuid?: string;
 		alias?: string;
-		animal?: string;
+		animal?: PetAnimal;  // Cambiado a PetAnimal
 		mmr: {
 			match_id: string;
 			win: boolean;
@@ -78,10 +78,10 @@ export interface IPet {
 		password?: string;
 	};
 	owner: PetOwners;
-	stars: number; // stars
-	food: number; // cinamon
+	stars: number;  // stars
+	food: number;  // cinamon
 	Animals: PetAnimal[];
-	alive: boolean;
+	alive: boolean;  // Se mantiene como boolean
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -124,6 +124,14 @@ const modelo: Schema<IPet> = new Schema(
 					}
 				]
 			},
+			channel: {
+				type: String,
+				required: true
+			},
+			message: {
+				type: String,
+				required: true
+			}
 		},
 		photos: {
 			start: {
@@ -150,18 +158,8 @@ const modelo: Schema<IPet> = new Schema(
 			required: false
 		},
 		alive: {
-			active: {
-				type: Boolean,
-				required: true
-			},
-			startedAt: {
-				type: Date,
-				required: false
-			},
-			endedAt: {
-				type: Date,
-				required: false
-			}
+			type: Boolean,  // Cambiado a booleano para que coincida con la interfaz
+			required: true
 		},
 		mascot: {
 			puuid: {
@@ -170,6 +168,7 @@ const modelo: Schema<IPet> = new Schema(
 			},
 			animal: {
 				type: String,
+				enum: Object.values(PetAnimal),  // Cambiado a PetAnimal
 				required: true
 			},
 			mmr: {
@@ -221,6 +220,16 @@ const modelo: Schema<IPet> = new Schema(
 				}
 			],
 			required: true
-		} 
-	})		
+		},
+		createdAt: {
+			type: Date,
+			default: Date.now
+		},
+		updatedAt: {
+			type: Date,
+			default: Date.now
+		}
+	}
+);
+
 export default model("pets", modelo);
