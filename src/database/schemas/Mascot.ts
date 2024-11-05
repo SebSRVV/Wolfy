@@ -1,4 +1,4 @@
-import { PetAnimal, PetRoles } from "@/src/enums";
+import { PetTypes, PetRoles } from "@/src/enums";
 import { Schema, model } from "mongoose";
 import { MemberRanks } from "./Member";
 
@@ -39,7 +39,7 @@ export enum PetRanks {
 export interface IPet {
 	nombre: string;
 	status: PetStatus;
-	animal: PetAnimal;
+	animal: PetTypes;
 	alias?: string;
 	custom: PetAccesories;
 	discord: {
@@ -67,7 +67,7 @@ export interface IPet {
 	mascot: {
 		puuid?: string;
 		alias?: string;
-		animal?: PetAnimal;  // Cambiado a PetAnimal
+		animal?: PetTypes;  // Cambiado a PetAnimal
 		mmr: {
 			match_id: string;
 			win: boolean;
@@ -80,7 +80,7 @@ export interface IPet {
 	owner: PetOwners;
 	stars: number;  // stars
 	food: number;  // cinamon
-	Animals: PetAnimal[];
+	Animals: PetTypes[];
 	alive: boolean;  // Se mantiene como boolean
 	createdAt: Date;
 	updatedAt: Date;
@@ -168,7 +168,7 @@ const modelo: Schema<IPet> = new Schema(
 			},
 			animal: {
 				type: String,
-				enum: Object.values(PetAnimal),  // Cambiado a PetAnimal
+				enum: Object.values(PetTypes),  // Cambiado a PetAnimal
 				required: true
 			},
 			mmr: {
@@ -216,7 +216,7 @@ const modelo: Schema<IPet> = new Schema(
 			type: [
 				{
 					type: String,
-					enum: Object.values(PetAnimal)
+					enum: Object.values(PetTypes)
 				}
 			],
 			required: true

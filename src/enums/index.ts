@@ -37,13 +37,10 @@ export enum PriorityUpgrade {
 	Neutral = "Neutral"
 }
 
-export enum PetAnimal {
-	Lobo = "wolf",
-	Perro = "dog",
-	Gato = "cat",
-	Foca = "foka",
-	Halcon = "halcon",
-	Leon = "lion",
-	Capibara = "capibara",
-	Conejo = "bunnie"
+export enum PetTypes {
+    Wolf = "wolf",
+    Dog = "dog",
+    Cat = "cat",
+    Rabbit = "rabbit",
+    Bird = "bird"
 }

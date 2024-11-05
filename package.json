@@ -1,12 +1,14 @@
 {
   "dependencies": {
     "@discordjs/builders": "^1.9.0",
+    "@discordjs/rest": "^2.4.0",
     "@discordjs/voice": "^0.17.0",
     "@vitalets/google-translate-api": "^9.2.0",
     "axios": "^1.7.7",
     "colors": "^1.4.0",
     "compromise": "^14.14.0",
-    "discord.js": "^14.16.2",
+    "discord-player": "^6.7.1",
+    "discord.js": "^14.16.3",
     "dotenv": "16.4.5",
     "erela.js": "^2.4.0",
     "fancy-log": "^2.0.0",
@@ -29,7 +31,7 @@
     "eslint": "9.10.0",
     "prettier": "3.3.3",
     "tsx": "4.19.1",
-    "typescript": "^5.6.2"
+    "typescript": "^5.6.3"
   },
   "scripts": {
     "dev": "tsx watch src/index.ts",

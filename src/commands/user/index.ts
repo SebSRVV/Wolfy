@@ -1,9 +1,9 @@
 import { ApplicationCommandOptionType, ApplicationCommandType, ChannelType } from "discord.js";
 import { CommandInterface } from "@/src/types/Command";
-import addMember from "./add-member";
 import removeMember from "./remove-member";
 import hideMember from "./hide-member";
 import editMember from "./edit-member";
+import addMember from "./add-member";
 import { MemberRanks } from "@/src/database/schemas/Member";
 import { UserPermission } from "@/src/enums/UserPermission";
 
