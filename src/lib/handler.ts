@@ -30,7 +30,7 @@ export default class Handler {
 			const filePath = pathToFileURL(path.join(commandsPath, cmd))?.href;
 			if (!filePath) return console.error("Command path not found");
 
-			const { command } = await import(filePath) as { command: CommandInterface };
+			const { command } = (await import(filePath)) as { command: CommandInterface };
 
 			if (!command) return;
 			if (!command?.name) {
@@ -41,22 +41,22 @@ export default class Handler {
 		});
 	};
 
-		retrieveAutocomplete = async () => {
+	retrieveAutocomplete = async () => {
 		const commandsPath = path.join(__dirname, "../autocomplete");
 		const commandFiles = readdirSync(commandsPath);
 
 		commandFiles.forEach(async cmd => {
-		const filePath = pathToFileURL(path.join(commandsPath, cmd))?.href;
-		if (!filePath) return console.error("Autocomplete path not found");
+			const filePath = pathToFileURL(path.join(commandsPath, cmd))?.href;
+			if (!filePath) return console.error("Autocomplete path not found");
 
-		const { command } = await import(filePath);
-		if (!command?.name) {
-			console.warn(`${command} doesn't have the "name" property`);
-			return;
-		}
-		this.client.autocomplete?.set(command.name, command);
-	});
-};
+			const { command } = await import(filePath);
+			if (!command?.name) {
+				console.warn(`${command} doesn't have the "name" property`);
+				return;
+			}
+			this.client.autocomplete?.set(command.name, command);
+		});
+	};
 
 	// retrieveSelectmenu = async () => {
 	// 	const commandsPath = path.join(__dirname, "../selectmenus");
@@ -117,7 +117,7 @@ export default class Handler {
 		});
 
 		// Wait for all promises to resolve
-		const arrayOfSlashCommands = await Promise.all(promises)
+		const arrayOfSlashCommands = await Promise.all(promises);
 
 		// Filter out null values (failed imports or invalid commands)
 		const validCommands = arrayOfSlashCommands.filter(command => command !== null);

@@ -2,8 +2,8 @@ import { Client as OldClient, type ClientOptions, Collection } from "discord.js"
 import { CommandInterface } from "@/src/types/Command";
 import { EventInterface } from "@/src/types/Event";
 import { AutocompleteInterface } from "../types/Autocomplete";
-import { Manager } from "erela.js";
-import lavalink from "./erela";
+import lavalink from "./lavalink";
+import { LavalinkManager } from "lavalink-client/dist/types";
 //import { WolfyMLP } from "@/src/lib/wolfymlp";
 //import { WolfyNLP } from "@/src/lib/wolfynlp";
 
@@ -11,7 +11,7 @@ export class Client extends OldClient {
 	commands: Collection<string, CommandInterface>;
 	events: Collection<string, EventInterface>;
 	autocomplete: Collection<string, AutocompleteInterface>;
-	manager: Manager = lavalink(this);
+	manager: LavalinkManager = lavalink(this);
 	static instance: Client;
 
 	// wolfy: WolfyMLP;
