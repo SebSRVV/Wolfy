@@ -15,12 +15,15 @@ export enum PetTypes {
 }
 
 export interface IPet {
-	name : string;
-    type: PetTypes;      
-    xp: number;         
+    name: string;
+    type: PetTypes;
+    rarity: string;
+    xp: number;
     level: number;
-	feed: number;
-	time: Date;     
+    feed: number;
+    starsEarned: number;
+    time: Date;
+    image: string;
 }
 
 export interface IMember {
@@ -47,11 +50,10 @@ export interface IMember {
     }[];
     rank: MemberRanks;
     hide: boolean;
-    pet: IPet | null;
+    pet: IPet; 
     createdAt: Date;
     updatedAt: Date;
 }
-
 
 const memberSchema: Schema<IMember> = new Schema(
     {
@@ -82,20 +84,31 @@ const memberSchema: Schema<IMember> = new Schema(
                 by: { type: String, required: true }
             }
         ],
-        rank: { type: String, enum: Object.values(MemberRanks), required: true, default: MemberRanks.Novice },
-        hide: { type: Boolean, required: true, default: false },
+        rank: { 
+            type: String, 
+            enum: Object.values(MemberRanks), 
+            required: true, 
+            default: MemberRanks.Novice 
+        },
+        hide: { 
+            type: Boolean, 
+            required: true, 
+            default: false 
+        },
         pet: {
-            type: {
-                type: String,
-                enum: Object.values(PetTypes),
-                required: false
-            },
+            name: { type: String, required: false, default: "Sin nombre" },
+            type: { type: String, enum: Object.values(PetTypes), required: false },
+            rarity: { type: String, required: false, default: "Común" },
             xp: { type: Number, default: 0 },
-            level: { type: Number, default: 1 }
+            level: { type: Number, default: 1 },
+            feed: { type: Number, default: 0 },
+            starsEarned: { type: Number, default: 0 },
+            time: { type: Date, default: Date.now }, // Fecha de adopción
+            image: { type: String, required: false, default: "" } // Imagen de la mascota generada por IA
         }
     },
     {
-        timestamps: true,
+        timestamps: true, // Incluye createdAt y updatedAt automáticamente
         versionKey: false
     }
 );

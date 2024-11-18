@@ -22,8 +22,9 @@ const handler = new Handler(client);
 // Cambia esta línea para esperar la inicialización
 (async () => {
     await handler.init();
-    await handler.publishCommands(); // Espera a que se publiquen los comandos
+    await handler.publishCommands(); 
     client.login(process.env.DiscordTokenKey);
 })();
+
 
 export { client };
