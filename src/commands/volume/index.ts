@@ -8,7 +8,7 @@ export const command: CommandInterface = {
     options: [
         {
             name: "level",
-            description: "Nivel de volumen (1-100).",
+            description: "Nivel de volumen [ 1-100 ].",
             type: ApplicationCommandOptionType.Integer,
             required: true,
             min_value: 1,
