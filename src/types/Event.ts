@@ -6,7 +6,7 @@ interface Run {
 }
 
 export interface EventInterface {
-	name: keyof ClientEvents;
+	name: keyof ClientEvents | "raw";
 	once?: boolean;
 	run: Run;
 }
