@@ -5,8 +5,8 @@ const lavalink = (client: Client) =>
 	new LavalinkManager({
 		nodes: [
 			{
-				authorization: "wolfy12",
-				host: "51.222.143.229",
+				authorization: "iohVgwLjGNlr5pRrPJD1wR0fTZBEqMQs",
+				host: "82.197.67.160",
 				port: 2333,
 				id: "main",
 				requestSignalTimeoutMS: 3000,
