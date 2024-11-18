@@ -1,87 +1,105 @@
-import { ApplicationCommandOptionType, ApplicationCommandType } from "discord.js";
+import {
+	ApplicationCommandOptionType,
+	ApplicationCommandType,
+	GuildMember,
+	TextChannel,
+	VoiceChannel
+} from "discord.js";
 import { CommandInterface } from "@/src/types/Command";
+import { Player, SearchPlatform, SearchResult } from "lavalink-client/dist/types";
 
 export const command: CommandInterface = {
 	name: "play",
-	description: "Play a song",
+	description: "Reproduce música en un canal de voz",
 	type: ApplicationCommandType.ChatInput,
 	options: [
 		{
-			name: "query",
-			description: "The song you want to play",
+			name: "song",
+			description: "Nombre de la canción a reproducir",
 			type: ApplicationCommandOptionType.String,
-			required: true
+			required: true,
+			autocomplete: true
 		}
 	],
 	async run(client, interaction) {
-		if (!interaction.guild) return interaction.reply("This command can only be used in a server.");
-		if (!interaction.member) return interaction.reply("You need to be in a guild to use this command.");
-		if (!interaction.channel) return interaction.reply("You need to be in a channel to use this command.");
-
-		const member = interaction.member as any;
-
-		if (!member.voice) return interaction.reply("You need to join a voice channel.");
-		if (!member.voice.channel) return interaction.reply("You need to join a voice channel.");
-
-		const { channel } = member.voice;
-		const query = interaction.options.getString("query");
-
-		if (!channel)
-			return interaction.reply({
-				content: "You need to join a voice channel."
-			});
-		if (!query)
-			return interaction.reply({
-				content: "You need to provide a search query."
-			});
-
-		const player = client.manager.create({
-			guild: interaction.guild.id,
-			voiceChannel: channel.id,
-			textChannel: interaction.channel.id
-		});
-
-		if (player.state !== "CONNECTED") player.connect();
-
-		const search = query;
-		let res;
-
 		try {
-			res = await player.search(search, interaction.user);
-			if (res.loadType === "LOAD_FAILED") {
-				if (!player.queue.current) player.destroy();
-				throw res.exception;
+			if (!interaction.guild) return interaction.reply({ content: "Debes estar en un servidor", ephemeral: true });
+
+			const vcId = (interaction.member as GuildMember)?.voice?.channelId;
+			if (!vcId)
+				return interaction.reply({
+					content: "Debes estar en un canal de voz para usar este comando.",
+					ephemeral: true
+				});
+
+			const vc = (interaction.member as GuildMember)?.voice?.channel as VoiceChannel;
+			if (!vc.joinable || !vc.speakable)
+				return interaction.reply({
+					ephemeral: true,
+					content: "No tengo permisos para unirme o hablar en ese canal de voz."
+				});
+
+			const song = interaction.options.getString("song");
+			const source = (interaction.options.getString("source") || "ytsearch") as SearchPlatform | undefined;
+			if (!song) return interaction.reply({ content: "Debes ingresar un nombre de canción.", ephemeral: true });
+
+			if (song === "join_guild")
+				return interaction.reply({ content: `Debes estar en un servidor`, ephemeral: true });
+			if (song === "nothing_found")
+				return interaction.reply({ content: `No se encontraron canciones`, ephemeral: true });
+			if (song === "join_vc")
+				return interaction.reply({
+					content: `Debes estar en un canal de voz para usar este comando.`,
+					ephemeral: true
+				});
+
+			const player = (client.manager.getPlayer(interaction.guild.id) ||
+				client.manager.createPlayer({
+					guildId: interaction.guild.id,
+					voiceChannelId: vcId,
+					textChannelId: interaction.channelId,
+					selfDeaf: true,
+					selfMute: false,
+					volume: 70,
+					instaUpdateFiltersFix: true, // optional
+					applyVolumeAsFilter: false, // if true player.setVolume(54) -> player.filters.setVolume(0.54)
+					node: "main"
+				})) as Player;
+
+			const connected = player.connected;
+			if (!connected) await player.connect();
+
+			if (player.voiceChannelId !== vcId)
+				return interaction.reply({
+					content: `Debes estar en el mismo canal de voz que yo para usar este comando.`,
+					ephemeral: true
+				});
+
+			const response = (await player.search({ query: song, source }, interaction.user)) as SearchResult;
+
+			if (!response || !response.tracks?.length)
+				return interaction.reply({ content: `No se encontraron canciones.`, ephemeral: true });
+
+			await player.queue.add(response.loadType === "playlist" ? response.tracks : response.tracks[0]);
+
+			await interaction.reply({
+				content:
+					response.loadType === "playlist"
+						? `✅ Added [${response.tracks.length}] Tracks${response.playlist?.title ? ` - from the ${response.pluginInfo.type || "Playlist"} ${response.playlist.uri ? `[\`${response.playlist.title}\`](<${response.playlist.uri}>)` : `\`${response.playlist.title}\``}` : ""} at \`#${player.queue.tracks.length - response.tracks.length}\``
+						: `✅ Added [\`${response.tracks[0].info.title}\`](<${response.tracks[0].info.uri}>) by \`${response.tracks[0].info.author}\` at \`#${player.queue.tracks.length}\``,
+				ephemeral: true
+			});
+
+			if (!player.playing) {
+				await player.play(connected ? { volume: 70, paused: false } : undefined);
+				player.setVolume(70);
 			}
-		} catch (err) {
-			return interaction.reply(`there was an error while searching`);
-		}
-
-		if (!res.tracks.length) return interaction.reply("No tracks were found.");
-
-		switch (res.loadType) {
-			case "NO_MATCHES":
-				if (!player.queue.current) player.destroy();
-				return interaction.reply("there were no results found.");
-			case "TRACK_LOADED":
-				player.queue.add(res.tracks[0]);
-
-				if (!player.playing && !player.paused && !player.queue.size) player.play();
-				return interaction.reply(`enqueuing \`${res.tracks[0].title}\`.`);
-			case "PLAYLIST_LOADED":
-				player.queue.add(res.tracks);
-
-				if (!res.playlist) return interaction.reply("No tracks were found.");
-
-				if (!player.playing && !player.paused && player.queue.totalSize === res.tracks.length) player.play();
-				return interaction.reply(`enqueuing playlist \`${res.playlist.name}\` with ${res.tracks.length} tracks.`);
-			case "SEARCH_RESULT": {
-				const track = res.tracks[0];
-				player.queue.add(track);
-
-				if (!player.playing && !player.paused && !player.queue.size)
-					player.play();
-
-				return interaction.reply(`enqueuing \`${track.title}\`.`);
+		} catch (error) {
+			console.error(error);
+			if (interaction.replied) {
+				interaction.editReply({ content: "Ocurrió un error al ejecutar el comando." });
+			} else {
+				interaction.reply({ content: "Ocurrió un error al ejecutar el comando.", ephemeral: true });
 			}
 		}
 	}
