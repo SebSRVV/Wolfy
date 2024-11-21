@@ -10,7 +10,7 @@ import { MemberRanks } from "@schemas/Member";
 
 export const command: CommandInterface = {
     name: "info",
-    description: "Muestra la información de tu mascota y tu rango de entrenador.",
+    description: "Muestra la información detallada de tu mascota y tu rango de entrenador.",
     type: ApplicationCommandType.ChatInput,
 
     async run(client, interaction) {
@@ -40,15 +40,25 @@ export const command: CommandInterface = {
         }
 
         // Obtener información de la mascota y del usuario
-        const { name = "Mascota", type = "desconocido", rarity = "común", level = 1, xp = 0, feed = 0, starsEarned = 0, time = Date.now() } = member.pet || {};
+        const { 
+            name = "Mascota", 
+            type = "desconocido", 
+            rarity = "común", 
+            level = 1, 
+            xp = 0, 
+            feed = 0, 
+            starsEarned = 0, 
+            time = Date.now() 
+        } = member.pet || {};
+
         const rank = member.rank || MemberRanks.Novice;
         const adoptionDate = new Date(time);
         const daysTogether = Math.floor((Date.now() - adoptionDate.getTime()) / (1000 * 60 * 60 * 24));
 
-        // Progreso de experiencia al próximo rango
+        // Calcular progreso de experiencia hacia el próximo nivel/rango
         let xpNeededForNextLevel = 100;
         let xpProgress = xp;
-        
+
         if (rank === MemberRanks.Trainer) {
             xpNeededForNextLevel = 200;
         } else if (rank === MemberRanks.Master) {
@@ -57,24 +67,57 @@ export const command: CommandInterface = {
 
         const progressPercentage = ((xp / xpNeededForNextLevel) * 100).toFixed(2);
 
-        // Crear embed de información de la mascota
+        // Iconos mejorados para rareza y tipo de mascota
+        const rarityIcons: { [key: string]: string } = {
+            común: "🟢",
+            raro: "🔵",
+            épico: "🟣",
+            legendario: "🟡",
+        };
+
+        const petTypeIcons: { [key: string]: string } = {
+            perro: "🐶",
+            dog: "🐶",
+            gato: "🐱",
+            cat: "🐱",
+            dragón: "🐉",
+            dragon: "🐉",
+            ave: "🐦",
+            bird: "🐦",
+            zorro: "🦊",
+            fox: "🦊",
+            rabbit: "🐰",
+            conejo: "🐰",
+            wolf: "🐺",
+            lobo: "🐺",
+            desconocido: "❓",
+        };
+
+        const rarityDisplay = `${rarityIcons[rarity] || "⚪"} ${rarity.charAt(0).toUpperCase() + rarity.slice(1)}`;
+        const typeDisplay = `${petTypeIcons[type] || "❓"} ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+
+        // Crear embed de información mejorado
         const infoEmbed = new EmbedBuilder()
             .setColor(Colors.Blue)
             .setTitle(`✨ Información de tu Mascota y Entrenador`)
-            .setDescription("Aquí tienes los detalles de tu mascota y tu rango de entrenador:")
+            .setDescription(
+                `Aquí tienes todos los detalles sobre tu mascota y tu progreso como entrenador.\n\n` +
+                `💡 **Recuerda:** Cuida bien de tu mascota para subir de nivel y desbloquear recompensas exclusivas.`
+            )
             .addFields(
                 { name: "🦮 Nombre", value: name, inline: true },
-                { name: "🐶 Animal", value: type.charAt(0).toUpperCase() + type.slice(1), inline: true },
-                { name: "🌟 Rareza", value: rarity, inline: true },
+                { name: "🐾 Tipo de Mascota", value: typeDisplay, inline: true },
+                { name: "🌟 Rareza", value: rarityDisplay, inline: true },
                 { name: "⚡ Nivel", value: `${level}`, inline: true },
-                { name: "🔹 XP Actual", value: `${xp} XP`, inline: true },
-                { name: "🍖 Alimento Recibido", value: `${feed} veces`, inline: true },
+                { name: "🔹 Experiencia", value: `${xp} XP`, inline: true },
+                { name: "📈 Progreso XP", value: `${progressPercentage}% (${xp}/${xpNeededForNextLevel})`, inline: true },
+                { name: "🍖 Alimento Dado", value: `${feed} veces`, inline: true },
                 { name: "⭐ Estrellas Ganadas", value: `${starsEarned} estrellas`, inline: true },
                 { name: "🏅 Rango de Entrenador", value: rank, inline: true },
-                { name: "📅 Tiempo Juntos", value: `${daysTogether} días`, inline: true },
-                { name: "📈 Progreso de XP", value: `${progressPercentage}% hacia el próximo rango (${xp}/${xpNeededForNextLevel})`, inline: false }
+                { name: "📅 Tiempo Juntos", value: `${daysTogether} días`, inline: true }
             )
-            .setFooter({ text: "¡Continúa cuidando de tu mascota para mejorar tu rango!" })
+            .setThumbnail(interaction.user.displayAvatarURL({  }))
+            .setFooter({ text: "¡Sigue avanzando y cuida de tu mascota!" })
             .setTimestamp();
 
         await interaction.reply({ embeds: [infoEmbed] });
