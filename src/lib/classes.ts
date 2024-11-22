@@ -16,19 +16,12 @@ export class Client extends OldClient {
 	manager: LavalinkManager = lavalink(this);
 	static instance: Client;
 
-	// wolfy: WolfyMLP;
-	// nlp: WolfyNLP;
-
 	constructor(options: ClientOptions) {
 		super(options);
 		this.commands = new Collection();
 		this.buttons = new Collection();
 		this.events = new Collection();
 		this.autocomplete = new Collection();
-
-		// Initialize instances of WolfyMLP and WolfyNLP
-		//  this.wolfy = new WolfyMLP([3, 5, 1]); // Adjust layer sizes as necessary
-		//  this.nlp = new WolfyNLP();
 
 		Client.instance = this;
 	}
@@ -37,20 +30,4 @@ export class Client extends OldClient {
 		return this.instance;
 	}
 
-	//     // You can add more methods here to interact with WolfyMLP and WolfyNLP
-	//    // public analyzeMessage(message: string): number[] {
-	//     //    return this.nlp.extractFeatures(message);
-	//    // }
-
-	//    // public trainModel(inputs: number[], target: number): void {
-	//         this.wolfy.train(inputs, target);
-	//     }
-
-	//     public predict(inputs: number[]): number {
-	//         return this.wolfy.predict(inputs);
-	//     }
-
-	//     public getModelWeights(): number[][][] {
-	//         return this.wolfy.getWeights();
-	//     }
 }

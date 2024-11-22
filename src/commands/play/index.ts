@@ -6,6 +6,7 @@ import {
 } from "discord.js";
 import { CommandInterface } from "@/src/types/Command";
 import { Player, SearchPlatform, SearchResult } from "lavalink-client/dist/types";
+import { EmbedBuilder } from "discord.js";
 
 export const command: CommandInterface = {
 	name: "play",
@@ -60,8 +61,8 @@ export const command: CommandInterface = {
 					selfDeaf: true,
 					selfMute: false,
 					volume: 70,
-					instaUpdateFiltersFix: true, // optional
-					applyVolumeAsFilter: false, // if true player.setVolume(54) -> player.filters.setVolume(0.54)
+					instaUpdateFiltersFix: true, 
+					applyVolumeAsFilter: false, 
 					node: "main"
 				})) as Player;
 
@@ -80,13 +81,31 @@ export const command: CommandInterface = {
 				return interaction.reply({ content: `No se encontraron canciones.`, ephemeral: true });
 
 			await player.queue.add(response.loadType === "playlist" ? response.tracks : response.tracks[0]);
-
 			await interaction.reply({
-				content:
+				embeds: [
 					response.loadType === "playlist"
-						? `✅ Added [${response.tracks.length}] Tracks${response.playlist?.title ? ` - from the ${response.pluginInfo.type || "Playlist"} ${response.playlist.uri ? `[\`${response.playlist.title}\`](<${response.playlist.uri}>)` : `\`${response.playlist.title}\``}` : ""} at \`#${player.queue.tracks.length - response.tracks.length}\``
-						: `✅ Added [\`${response.tracks[0].info.title}\`](<${response.tracks[0].info.uri}>) by \`${response.tracks[0].info.author}\` at \`#${player.queue.tracks.length}\``,
-				ephemeral: true
+						? new EmbedBuilder()
+							  .setColor(0x00ff00)
+							  .setTitle("✅ Playlist Añadida")
+							  .setDescription(
+								  `Se añadieron **${response.tracks.length} canciones** de la playlist [${
+									  response.playlist?.title || "Sin título"
+								  }](${response.playlist?.uri || "#"})`
+							  )
+							  .setFooter({ text: "Disfruta tu música 🎵" })
+							  .setTimestamp()
+						: new EmbedBuilder()
+							  .setColor(0x1e90ff)
+							  .setTitle("✅ Canción Añadida")
+							  .setDescription(
+								  `🎵 **Canción:** [${response.tracks[0].info.title}](${response.tracks[0].info.uri})\n👤 **Autor:** ${
+									  response.tracks[0].info.author
+								  }\n🔢 **Posición en la cola:** #${player.queue.tracks.length}`
+							  )
+							  .setFooter({ text: "Disfruta tu música 🎵" })
+							  .setTimestamp(),
+				],
+				ephemeral: true,
 			});
 
 			if (!player.playing) {
