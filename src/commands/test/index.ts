@@ -14,11 +14,11 @@ const loadModel = async () => {
     }
 };
 
-// Generar entradas simuladas
+// Generar entradas de prueba
 const generateTestInputs = (): { input_1: tf.Tensor; input_2: tf.Tensor } => {
     const maxSequenceLength = 30; // Longitud máxima
-    const inputArray1 = Array(maxSequenceLength).fill(1); // Valores simulados para input_1
-    const inputArray2 = Array(maxSequenceLength).fill(2); // Valores simulados para input_2
+    const inputArray1 = Array(maxSequenceLength).fill(1); // Simular datos para input_1
+    const inputArray2 = Array(maxSequenceLength).fill(2); // Simular datos para input_2
 
     return {
         input_1: tf.tensor([inputArray1], [1, maxSequenceLength]), // Tensor para input_1
@@ -28,9 +28,9 @@ const generateTestInputs = (): { input_1: tf.Tensor; input_2: tf.Tensor } => {
 
 // Procesar la salida del modelo
 const processTestOutput = (output: tf.Tensor): string => {
-    const predictions = output.dataSync(); // Obtener las predicciones
+    const predictions = output.dataSync(); // Obtener predicciones
     const topPrediction = predictions.indexOf(Math.max(...predictions)); // Índice con mayor probabilidad
-    return `La predicción más alta corresponde al índice: ${topPrediction}`;
+    return `La clase predicha es: ${topPrediction}`;
 };
 
 export const command: CommandInterface = {
@@ -40,7 +40,6 @@ export const command: CommandInterface = {
 
     async run(client, interaction) {
         try {
-            // Cargar el modelo si no está cargado
             await loadModel();
 
             if (!model) {
@@ -53,13 +52,13 @@ export const command: CommandInterface = {
             // Generar entradas simuladas
             const testInputs = generateTestInputs();
 
-            // Realizar la predicción
+            // Realizar predicción
             const testOutput = model.predict([testInputs.input_1, testInputs.input_2]) as tf.Tensor;
 
             // Procesar la salida
             const result = processTestOutput(testOutput);
 
-            // Crear embed de respuesta
+            // Crear un embed con el resultado
             const embed = new EmbedBuilder()
                 .setColor(Colors.Green)
                 .setTitle("**Prueba del Modelo**")
@@ -69,6 +68,7 @@ export const command: CommandInterface = {
                 .setFooter({ text: "Prueba de Modelo" })
                 .setTimestamp();
 
+            // Responder en Discord
             await interaction.reply({ embeds: [embed], ephemeral: true });
         } catch (error) {
             console.error(error);
