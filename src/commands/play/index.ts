@@ -2,7 +2,6 @@ import {
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
 	GuildMember,
-	TextChannel,
 	VoiceChannel
 } from "discord.js";
 import { CommandInterface } from "@/src/types/Command";

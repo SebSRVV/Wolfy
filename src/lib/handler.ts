@@ -19,7 +19,7 @@ export default class Handler {
 		await this.retrieveEvents();
 		await this.retrieveAutocomplete();
 		// await this.retrieveSelectmenu();
-		// await this.retrieveButton();
+		await this.retrieveButton();
 	}
 
 	retrieveCommands = async () => {
@@ -75,22 +75,22 @@ export default class Handler {
 	// 	});
 	// };
 
-	// retrieveButton = async () => {
-	// 	const commandsPath = path.join(__dirname, "../buttons");
-	// 	const commandFiles = readdirSync(commandsPath);
+	retrieveButton = async () => {
+		const commandsPath = path.join(__dirname, "../buttons");
+		const commandFiles = readdirSync(commandsPath);
 
-	// 	commandFiles.forEach(async cmd => {
-	// 		const filePath = pathToFileURL(path.join(commandsPath, cmd))?.href;
-	// 		if (!filePath) return console.error("Button path not found");
+		commandFiles.forEach(async cmd => {
+			const filePath = pathToFileURL(path.join(commandsPath, cmd))?.href;
+			if (!filePath) return console.error("Button path not found");
 
-	// 		const { command } = await import(filePath);
-	// 		if (!command?.name) {
-	// 			console.warn(`${command} doesn't have the "name" property`);
-	// 			return;
-	// 		}
-	// 		this.client.buttons?.set(command.name, command);
-	// 	});
-	// };
+			const { command } = await import(filePath);
+			if (!command?.name) {
+				console.warn(`${command} doesn't have the "name" property`);
+				return;
+			}
+			this.client.buttons?.set(command.name, command);
+		});
+	};
 
 	async publishCommands() {
 		const commandsPath = path.join(__dirname, "../commands");

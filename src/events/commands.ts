@@ -2,9 +2,9 @@ import { ChannelType, Colors, EmbedBuilder } from "discord.js";
 import { EventInterface } from "@/src/types/Event";
 import { CommandInterface } from "@/src/types/Command";
 import { AutocompleteInterface } from "../types/Autocomplete";
+import { ButtonInterface } from "../types/Button";
 // import memberModel, { IUser } from "@schemas/Member";
 // import { SelectmenusInterface } from "../types/Selectmenus";
-// import { ButtonInterface } from "../types/Button";
 
 export const event: EventInterface = {
 	name: "interactionCreate",
@@ -104,69 +104,68 @@ export const event: EventInterface = {
 					ephemeral: true
 				});
 			}
-			} else if (interaction.isAutocomplete()) {
-				try {
-
-					if (!interaction.guild)
-						return interaction.respond([
-							{
-								name: "This command can only be used in a server.",
-								value: "server"
-							}
-						]);
+		} else if (interaction.isAutocomplete()) {
+			try {
+				if (!interaction.guild)
+					return interaction.respond([
+						{
+							name: "This command can only be used in a server.",
+							value: "server"
+						}
+					]);
 				const command = client.autocomplete?.get(interaction.commandName) as AutocompleteInterface;
 				if (!command) {
 					console.error(`Command ${interaction.commandName} not found`);
 					throw new Error(`Command ${interaction.commandName} not found`);
 				}
 
-					await command.run(client, interaction);
-				} catch (error) {
-					console.error(error);
-					return interaction.respond([]);
+				await command.run(client, interaction);
+			} catch (error) {
+				console.error(error);
+				return interaction.respond([]);
+			}
+		} else if (interaction.isButton()) {
+			try {
+				const command = client.buttons?.get(interaction.customId.split("_")[0]) as ButtonInterface;
+				if (!command) {
+					console.error(`Command ${interaction.customId} not found`);
+					throw new Error(`Command ${interaction.customId} not found`);
 				}
-			} 
-			// else if (interaction.isStringSelectMenu()) {
-			// 	try {
-			// 		if (!interaction.guild)
-			// 			return interaction.reply({
-			// 				content: "This command can only be used in a server.",
-			// 				ephemeral: true
-			// 			});
-			// 		const command = client.selectmenus?.get(interaction.customId.split("_")[0]) as SelectmenusInterface;
-			// 		if (!command) {
-			// 			console.error(`Command ${interaction.customId} not found`);
-			// 			throw new Error(`Command ${interaction.customId} not found`);
-			// 		}
 
-			// 		await command.run(client, interaction);
-			// 	} catch (error) {
-			// 		console.error(error);
-			// 		return interaction.respond([]);
-			// 	}
-			// } else if (interaction.isButton()) {
-			// 	try {
-			// 		const command = client.buttons?.get(interaction.customId.split("_")[0]) as ButtonInterface;
-			// 		if (!command) {
-			// 			console.error(`Command ${interaction.customId} not found`);
-			// 			throw new Error(`Command ${interaction.customId} not found`);
-			// 		}
+				await command.run(client, interaction);
+			} catch (error) {
+				console.error(error);
+				if (interaction.replied) {
+					interaction.editReply({
+						content: "An error occurred while processing the command."
+					});
+				} else {
+					interaction.reply({
+						content: "An error occurred while processing the command.",
+						ephemeral: true
+					});
+				}
+			}
+		}
+		// else if (interaction.isStringSelectMenu()) {
+		// 	try {
+		// 		if (!interaction.guild)
+		// 			return interaction.reply({
+		// 				content: "This command can only be used in a server.",
+		// 				ephemeral: true
+		// 			});
+		// 		const command = client.selectmenus?.get(interaction.customId.split("_")[0]) as SelectmenusInterface;
+		// 		if (!command) {
+		// 			console.error(`Command ${interaction.customId} not found`);
+		// 			throw new Error(`Command ${interaction.customId} not found`);
+		// 		}
 
-			// 		await command.run(client, interaction);
-			// 	} catch (error) {
-			// 		console.error(error);
-			// 		if (interaction.replied) {
-			// 			interaction.editReply({
-			// 				content: "An error occurred while processing the command."
-			// 			});
-			// 		} else {
-			// 			interaction.reply({
-			// 				content: "An error occurred while processing the command.",
-			// 				ephemeral: true
-			// 			});
-			// 		}
-			// 	}
-		//} 
+		// 		await command.run(client, interaction);
+		// 	} catch (error) {
+		// 		console.error(error);
+		// 		return interaction.respond([]);
+		// 	}
+		// }
 		else {
 			console.debug(interaction);
 		}
