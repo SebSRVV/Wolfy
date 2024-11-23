@@ -5,7 +5,7 @@ import { PetTypes } from "@/src/enums";
 
 export const command: CommandInterface = {
     name: "adopt",
-    description: "Adopta una nueva mascota.",
+    description: "Adopta una nueva mascota y empieza tu aventura.",
     type: ApplicationCommandType.ChatInput,
     options: [
         {
@@ -27,9 +27,18 @@ export const command: CommandInterface = {
     ],
 
     async run(client, interaction) {
-        const name = interaction.options.getString("nombre")!;
-        const type = interaction.options.getString("tipo")!;
+        const name = interaction.options.getString("nombre", true);
+        const type = interaction.options.getString("tipo", true);
 
+        // Validar el nombre
+        if (name.length < 3 || name.length > 20) {
+            return interaction.reply({
+                content: "❌ El nombre de la mascota debe tener entre 3 y 20 caracteres.",
+                ephemeral: true,
+            });
+        }
+
+        // Buscar al usuario en la base de datos
         const member = await memberSchema.findOne({ "discord.id": interaction.user.id });
 
         if (member && member.pet) {
@@ -39,19 +48,29 @@ export const command: CommandInterface = {
             });
         }
 
+        // Crear los datos básicos de la nueva mascota
         const newPet = {
             name,
             type,
-            rarity: "common", // Raridad básica al adoptar
+            rarity: "common", // Rareza inicial
             level: 1,
             xp: 0,
             feed: 0,
             starsEarned: 0,
             time: new Date(),
+            stats: {
+                health: 100,
+                shield: 10,
+                attack: 5,
+                agility: 1,
+                critChance: 5,
+                critDamage: 20,
+            },
+            items: [], // Sin ítems al inicio
         };
 
         if (!member) {
-            // Crear un nuevo usuario con la mascota
+            // Crear un nuevo usuario y agregar la mascota
             await memberSchema.create({
                 discord: { id: interaction.user.id, username: interaction.user.username },
                 money: { economy: [], food: [] },
@@ -61,21 +80,31 @@ export const command: CommandInterface = {
                 pet: newPet,
             });
         } else {
-            // Agregar la mascota al miembro existente
+            // Si el usuario ya existe pero no tiene mascota, agregarla
             member.pet = newPet;
             await member.save();
         }
 
+        // Embed para mostrar la información de la mascota adoptada
         const embed = new EmbedBuilder()
             .setColor(Colors.Green)
             .setTitle("🐾 ¡Felicidades por tu nueva mascota!")
             .setDescription(
-                `¡Has adoptado un **${type.charAt(0).toUpperCase() + type.slice(1)}** llamado **${name}**.\n` +
-                `Cuida bien de tu mascota y ayúdala a crecer.`)
+                `Has adoptado un **${type.charAt(0).toUpperCase() + type.slice(1)}** llamado **${name}**.\n` +
+                `Cuida bien de tu mascota y ayúdala a crecer.`
+            )
             .addFields(
                 { name: "🌟 Rareza", value: "Común", inline: true },
-                { name: "⚡ Nivel", value: "1", inline: true }
+                { name: "⚡ Nivel", value: "1", inline: true },
+                { name: "❤️ Vida", value: "100", inline: true },
+                { name: "🛡️ Escudo", value: "10", inline: true },
+                { name: "⚔️ Ataque", value: "5", inline: true },
+                { name: "⚡ Agilidad", value: "1 ataque/s", inline: true },
+                { name: "🔥 Prob. Crítica", value: "5%", inline: true },
+                { name: "💥 Daño Crítico", value: "20%", inline: true }
             )
+            .setThumbnail(interaction.user.displayAvatarURL({  }))
+            .setFooter({ text: "¡Sigue cuidando de tu mascota y mejora sus estadísticas!" })
             .setTimestamp();
 
         await interaction.reply({ embeds: [embed] });

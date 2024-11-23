@@ -5,16 +5,14 @@ import {
 } from "discord.js";
 import { CommandInterface } from "@/src/types/Command";
 import memberSchema from "@schemas/Member";
-import { PetTypes } from "@/src/enums";
 import { MemberRanks } from "@schemas/Member";
 
 export const command: CommandInterface = {
     name: "info",
-    description: "Muestra la información detallada de tu mascota y tu rango de entrenador.",
+    description: "Muestra información completa de tu mascota, estadísticas y objetos equipados.",
     type: ApplicationCommandType.ChatInput,
 
     async run(client, interaction) {
-        // Buscar el miembro en la base de datos
         const member = await memberSchema.findOne({ "discord.id": interaction.user.id });
 
         if (!member) {
@@ -39,87 +37,154 @@ export const command: CommandInterface = {
             return await interaction.reply({ embeds: [noPetEmbed], ephemeral: true });
         }
 
-        // Obtener información de la mascota y del usuario
-        const { 
-            name = "Mascota", 
-            type = "desconocido", 
-            rarity = "común", 
-            level = 1, 
-            xp = 0, 
-            feed = 0, 
-            starsEarned = 0, 
-            time = Date.now() 
-        } = member.pet || {};
+        // Información del usuario y mascota con valores predeterminados
+        const {
+            name = "Sin Nombre",
+            type = "desconocido",
+            rarity = "common",
+            level = 1,
+            xp = 0,
+            feed = 0,
+            starsEarned = 0,
+            stats = {
+                health: 100,
+                shield: 10,
+                attack: 5,
+                agility: 1,
+                critChance: 5,
+                critDamage: 20,
+            },
+            items = [],
+        } = member.pet;
 
         const rank = member.rank || MemberRanks.Novice;
-        const adoptionDate = new Date(time);
-        const daysTogether = Math.floor((Date.now() - adoptionDate.getTime()) / (1000 * 60 * 60 * 24));
 
-        // Calcular progreso de experiencia hacia el próximo nivel/rango
-        let xpNeededForNextLevel = 100;
-        let xpProgress = xp;
+        // Estadísticas base con valores predeterminados
+        const baseStats = {
+            health: stats.health ?? 100,
+            shield: stats.shield ?? 10,
+            attack: stats.attack ?? 5,
+            agility: stats.agility ?? 1,
+            critChance: stats.critChance ?? 5,
+            critDamage: stats.critDamage ?? 20,
+        };
 
-        if (rank === MemberRanks.Trainer) {
-            xpNeededForNextLevel = 200;
-        } else if (rank === MemberRanks.Master) {
-            xpNeededForNextLevel = 300;
-        }
+        // Calcular estadísticas totales (base + ítems)
+        const totalStats = { ...baseStats };
+        items.forEach(item => {
+            if (item.stats) {
+                for (const [stat, value] of Object.entries(item.stats)) {
+                    totalStats[stat as keyof typeof totalStats] =
+                        (totalStats[stat as keyof typeof totalStats] || 0) + value;
+                }
+            }
+        });
 
+        // Lista de ítems
+        const itemsDisplay = items.length
+            ? items
+                  .map(
+                      item =>
+                          `**• ${item.name}** (${item.rarity.toUpperCase()}):\n   - ${item.effect}`
+                  )
+                  .join("\n")
+            : "Ningún objeto equipado.";
+
+        // Calcular progreso de experiencia hacia el próximo nivel
+        const xpNeededForNextLevel = 100 + level * 50;
         const progressPercentage = ((xp / xpNeededForNextLevel) * 100).toFixed(2);
 
-        // Iconos mejorados para rareza y tipo de mascota
+        // Iconos y formato
         const rarityIcons: { [key: string]: string } = {
-            común: "🟢",
-            raro: "🔵",
-            épico: "🟣",
-            legendario: "🟡",
+            common: "🟢",
+            rare: "🔵",
+            epic: "🟣",
+            legendary: "🟡",
         };
 
         const petTypeIcons: { [key: string]: string } = {
-            perro: "🐶",
-            dog: "🐶",
-            gato: "🐱",
-            cat: "🐱",
-            dragón: "🐉",
-            dragon: "🐉",
-            ave: "🐦",
-            bird: "🐦",
-            zorro: "🦊",
-            fox: "🦊",
-            rabbit: "🐰",
-            conejo: "🐰",
             wolf: "🐺",
-            lobo: "🐺",
+            dog: "🐶",
+            cat: "🐱",
+            rabbit: "🐰",
+            bird: "🐦",
+            dragon: "🐉",
+            fox: "🦊",
             desconocido: "❓",
         };
 
         const rarityDisplay = `${rarityIcons[rarity] || "⚪"} ${rarity.charAt(0).toUpperCase() + rarity.slice(1)}`;
         const typeDisplay = `${petTypeIcons[type] || "❓"} ${type.charAt(0).toUpperCase() + type.slice(1)}`;
 
-        // Crear embed de información mejorado
+        // Crear embed horizontal
         const infoEmbed = new EmbedBuilder()
             .setColor(Colors.Blue)
-            .setTitle(`✨ Información de tu Mascota y Entrenador`)
+            .setTitle(`✨ Información de ${name}`)
+            .setThumbnail(interaction.user.displayAvatarURL({  }))
             .setDescription(
-                `Aquí tienes todos los detalles sobre tu mascota y tu progreso como entrenador.\n\n` +
-                `💡 **Recuerda:** Cuida bien de tu mascota para subir de nivel y desbloquear recompensas exclusivas.`
+                `Aquí tienes los detalles más importantes sobre **${name}**, tu fiel compañero.\n\n` +
+                `💡 **Cuida de tu mascota para mejorar sus estadísticas y desbloquear recompensas exclusivas.**`
             )
             .addFields(
-                { name: "🦮 Nombre", value: name, inline: true },
-                { name: "🐾 Tipo de Mascota", value: typeDisplay, inline: true },
-                { name: "🌟 Rareza", value: rarityDisplay, inline: true },
-                { name: "⚡ Nivel", value: `${level}`, inline: true },
-                { name: "🔹 Experiencia", value: `${xp} XP`, inline: true },
-                { name: "📈 Progreso XP", value: `${progressPercentage}% (${xp}/${xpNeededForNextLevel})`, inline: true },
-                { name: "🍖 Alimento Dado", value: `${feed} veces`, inline: true },
-                { name: "⭐ Estrellas Ganadas", value: `${starsEarned} estrellas`, inline: true },
-                { name: "🏅 Rango de Entrenador", value: rank, inline: true },
-                { name: "📅 Tiempo Juntos", value: `${daysTogether} días`, inline: true }
+                // Primera fila: Información básica
+                {
+                    name: "🏷️ Nombre",
+                    value: name,
+                    inline: true,
+                },
+                {
+                    name: "🦮 Tipo",
+                    value: typeDisplay,
+                    inline: true,
+                },
+                {
+                    name: "🌟 Rareza",
+                    value: rarityDisplay,
+                    inline: true,
+                },
+
+                // Segunda fila: Nivel y progreso
+                {
+                    name: "⚡ Nivel",
+                    value: `${level}`,
+                    inline: true,
+                },
+                {
+                    name: "🔹 XP",
+                    value: `${xp}/${xpNeededForNextLevel} (${progressPercentage}%)`,
+                    inline: true,
+                },
+                {
+                    name: "💎 Rango",
+                    value: rank,
+                    inline: true,
+                },
+
+                // Estadísticas Totales
+                {
+                    name: "📊 Estadísticas Totales",
+                    value:
+                        `❤️ Vida: ${totalStats.health}\n` +
+                        `🛡️ Escudo: ${totalStats.shield}\n` +
+                        `⚔️ Ataque: ${totalStats.attack}\n` +
+                        `⚡ Agilidad: ${totalStats.agility} ataques/s\n` +
+                        `🔥 Prob Crit: ${totalStats.critChance}%\n` +
+                        `💥 Crit DMG: ${totalStats.critDamage}%`,
+                    inline: false,
+                },
+
+                // Lista de ítems
+                {
+                    name: "🎒 Inventario de Ítems",
+                    value: itemsDisplay,
+                    inline: false,
+                }
             )
-            .setThumbnail(interaction.user.displayAvatarURL({  }))
-            .setFooter({ text: "¡Sigue avanzando y cuida de tu mascota!" })
+            .setFooter({
+                text: "¡Sigue cuidando de tu mascota y mejora tus estadísticas!",
+            })
             .setTimestamp();
 
         await interaction.reply({ embeds: [infoEmbed] });
-    }
+    },
 };
